@@ -1,5 +1,4 @@
 'use client'
-
 import Navbar from '@/components/ui/Navbar'
 import Link from 'next/link'
 import { Plus, MoreVertical, LayoutGrid, Folders } from 'lucide-react'
