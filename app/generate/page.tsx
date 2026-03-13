@@ -1,0 +1,426 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import Navbar from '@/components/ui/Navbar'
+import { Upload, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
+
+const DOCUMENT_OPTIONS = [
+    { id: 'introduction', label: 'Introduction' },
+    { id: 'designBrief', label: 'Design Brief Write-up' },
+    { id: 'briefDevelopment', label: 'Brief Development' },
+    { id: 'siteAnalysis', label: 'Site Analysis' },
+    { id: 'sitePlanning', label: 'Site Planning' },
+    { id: 'caseStudies', label: 'Case Studies' },
+    { id: 'spatialAnalysis', label: 'Spatial Analysis' },
+    { id: 'scheduleOfAccommodation', label: 'Schedule of Accommodation' }
+];
+
+export default function GeneratePage() {
+    const router = useRouter()
+
+    // UI State
+    const [pasteMode, setPasteMode] = useState(false)
+    const [file, setFile] = useState<File | null>(null)
+    const [briefText, setBriefText] = useState('')
+
+    // Process State
+    const [isExtracting, setIsExtracting] = useState(false)
+    const [isGenerating, setIsGenerating] = useState(false)
+    const [loadingMessage, setLoadingMessage] = useState('Reading your brief...')
+
+    // Data State
+    const [details, setDetails] = useState({
+        projectTitle: '',
+        buildingType: '',
+        location: '',
+        capacity: '',
+        users: '',
+        specialRequirements: '',
+        academicLevel: '200 Level',
+        university: 'FUTA',
+        extraContext: '',
+        rawText: ''
+    })
+
+    const [selectedDocuments, setSelectedDocuments] = useState(DOCUMENT_OPTIONS.map(d => d.id))
+
+    // Handlers
+    const handleFileUpload = async (uploadedFile: File) => {
+        setFile(uploadedFile)
+        setIsExtracting(true)
+
+        try {
+            const formData = new FormData()
+            formData.append('file', uploadedFile)
+
+            const response = await fetch('/api/extract', {
+                method: 'POST',
+                body: formData
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                setDetails(prev => ({
+                    ...prev,
+                    ...data.extracted,
+                    rawText: data.rawText
+                }))
+            }
+        } catch (error) {
+            console.error('Extraction failed:', error)
+        } finally {
+            setIsExtracting(false)
+        }
+    }
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault()
+        const droppedFile = e.dataTransfer.files[0]
+        if (droppedFile && droppedFile.type === 'application/pdf') {
+            handleFileUpload(droppedFile)
+        }
+    }
+
+    const handleDragOver = (e: React.DragEvent) => {
+        e.preventDefault()
+    }
+
+    const handleBriefTextChange = (text: string) => {
+        setBriefText(text)
+        setDetails(prev => ({ ...prev, rawText: text }))
+    }
+
+    const toggleDocument = (docType: string) => {
+        setSelectedDocuments(prev =>
+            prev.includes(docType)
+                ? prev.filter(d => d !== docType)
+                : [...prev, docType]
+        )
+    }
+
+    useEffect(() => {
+        if (!isGenerating) return;
+
+        const messages = [
+            "Reading your brief...",
+            "Generating Introduction...",
+            "Writing Site Analysis...",
+            "Researching Case Studies...",
+            "Building your documents..."
+        ];
+        let i = 0;
+
+        const interval = setInterval(() => {
+            i = (i + 1) % messages.length;
+            setLoadingMessage(messages[i]);
+        }, 3000);
+
+        return () => clearInterval(interval);
+    }, [isGenerating]);
+
+    const handleGenerate = async () => {
+        if (selectedDocuments.length === 0) return
+
+        setIsGenerating(true)
+
+        try {
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ details, selectedDocuments })
+            })
+
+            const data = await response.json()
+
+            if (data.success) {
+                sessionStorage.setItem(
+                    'formwork_output',
+                    JSON.stringify({
+                        documents: data.documents,
+                        details: details,
+                        selectedDocuments: selectedDocuments
+                    })
+                )
+                router.push('/output')
+            }
+        } catch (error) {
+            console.error('Generation failed:', error)
+        } finally {
+            setIsGenerating(false)
+        }
+    }
+
+    const isInputDisabled = isExtracting || isGenerating;
+
+    return (
+        <div className="min-h-screen flex flex-col bg-[#FAFAF8] text-[#1B2431]">
+            <Navbar />
+
+            <main className="flex-1 max-w-[1200px] w-full mx-auto px-[24px] lg:px-[80px] pt-[80px] pb-32">
+                <div className="grid grid-cols-1 lg:grid-cols-[60%_1fr] gap-[60px] items-start">
+
+                    {/* Left Column - Input Form */}
+                    <div className="space-y-[40px]">
+                        {/* Page Header */}
+                        <div>
+                            <h1 className="text-[40px] font-serif font-bold text-[#1B2431] mb-2 leading-tight">Start with your brief</h1>
+                            <p className="text-[16px] font-sans text-[#4A5568]">
+                                Upload your project brief or paste it below. Formwork will handle the rest.
+                            </p>
+                        </div>
+
+                        {/* Section 1: Upload */}
+                        <section className="space-y-4">
+                            {!pasteMode ? (
+                                <div
+                                    onDrop={handleDrop}
+                                    onDragOver={handleDragOver}
+                                    className={`border-2 border-dashed ${file ? 'border-green-500' : 'border-[#D4A853]'} rounded-[12px] bg-white px-[40px] py-[60px] flex flex-col items-center justify-center text-center ${isInputDisabled ? 'opacity-50 pointer-events-none' : ''}`}
+                                >
+                                    {isExtracting ? (
+                                        <div className="flex flex-col items-center">
+                                            <Loader2 className="w-10 h-10 text-[#D4A853] mb-4 animate-spin" />
+                                            <h3 className="font-bold text-lg mb-2 text-[#1B2431]">Reading your brief...</h3>
+                                        </div>
+                                    ) : file ? (
+                                        <div className="flex flex-col items-center">
+                                            <CheckCircle2 className="w-10 h-10 text-green-500 mb-4" />
+                                            <h3 className="font-bold text-lg mb-2 text-[#1B2431]">{file.name}</h3>
+                                            <p className="text-green-600 font-medium text-sm mb-6">Brief read successfully</p>
+                                            <button
+                                                onClick={() => {
+                                                    setFile(null);
+                                                    setDetails(prev => ({ ...prev, rawText: '' }));
+                                                }}
+                                                className="text-[#D4A853] text-[14px] font-medium hover:underline"
+                                            >
+                                                Change file
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <Upload className="w-10 h-10 text-[#D4A853] mb-4" />
+                                            <h3 className="font-bold text-lg mb-2 text-[#1B2431]">Drop your PDF brief here</h3>
+                                            <p className="text-[#6B7280] text-sm mb-6">PDF or Word documents up to 10MB</p>
+                                            <label className="px-6 py-3 bg-[#1B2431] text-white text-sm font-bold rounded hover:bg-[#D4A853] hover:text-[#1B2431] transition-colors cursor-pointer">
+                                                Browse Files
+                                                <input
+                                                    type="file"
+                                                    className="hidden"
+                                                    accept="application/pdf"
+                                                    onChange={(e) => {
+                                                        const selected = e.target.files?.[0];
+                                                        if (selected) handleFileUpload(selected);
+                                                    }}
+                                                />
+                                            </label>
+                                        </>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className={`border border-[#E8E0D0] bg-white rounded-[12px] overflow-hidden focus-within:border-[#D4A853] transition-colors shadow-sm ${isInputDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
+                                    <textarea
+                                        className="w-full h-[300px] p-[24px] focus:outline-none resize-none bg-transparent"
+                                        placeholder="Paste your brief content here..."
+                                        value={briefText}
+                                        onChange={(e) => handleBriefTextChange(e.target.value)}
+                                        disabled={isInputDisabled}
+                                    />
+                                </div>
+                            )}
+
+                            <div className="text-center mt-2">
+                                <button
+                                    onClick={() => setPasteMode(!pasteMode)}
+                                    className="text-[14px] font-medium text-[#D4A853] hover:underline hover:text-[#1B2431] transition-colors"
+                                    disabled={isInputDisabled}
+                                >
+                                    or {pasteMode ? 'upload a document' : 'paste your brief as text'}
+                                </button>
+                            </div>
+                        </section>
+
+                        {/* Section 2: Project Details */}
+                        <section className={isInputDisabled ? 'opacity-50 pointer-events-none' : ''}>
+                            <h2 className="text-[24px] font-serif font-bold mb-6 text-[#1B2431]">Project Details</h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-[20px]">
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">Building Type</label>
+                                    <input
+                                        type="text"
+                                        value={details.buildingType}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, buildingType: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[6px] px-[16px] py-[12px] focus:outline-none focus:border-[#D4A853] transition-colors"
+                                        placeholder="e.g. Cultural Center"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">Project Title</label>
+                                    <input
+                                        type="text"
+                                        value={details.projectTitle}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, projectTitle: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[6px] px-[16px] py-[12px] focus:outline-none focus:border-[#D4A853] transition-colors"
+                                        placeholder="e.g. Center for African Arts"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">Location</label>
+                                    <input
+                                        type="text"
+                                        value={details.location}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, location: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[6px] px-[16px] py-[12px] focus:outline-none focus:border-[#D4A853] transition-colors"
+                                        placeholder="e.g. Lagos, Nigeria"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">Number of Users / Capacity</label>
+                                    <input
+                                        type="text"
+                                        value={details.capacity}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, capacity: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[6px] px-[16px] py-[12px] focus:outline-none focus:border-[#D4A853] transition-colors"
+                                        placeholder="e.g. 500 Visitors"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">University</label>
+                                    <select
+                                        value={details.university}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, university: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[6px] px-[16px] py-[12px] focus:outline-none focus:border-[#D4A853] transition-colors appearance-none text-[#1B2431]"
+                                    >
+                                        <option>FUTA</option>
+                                        <option>UNILAG</option>
+                                        <option>OAU</option>
+                                        <option>ABU</option>
+                                        <option>Covenant</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">Academic Level</label>
+                                    <select
+                                        value={details.academicLevel}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, academicLevel: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[6px] px-[16px] py-[12px] focus:outline-none focus:border-[#D4A853] transition-colors appearance-none text-[#1B2431]"
+                                    >
+                                        <option>200 Level</option>
+                                        <option>300 Level</option>
+                                        <option>400 Level</option>
+                                        <option>500 Level</option>
+                                    </select>
+                                </div>
+                                <div className="col-span-1 md:col-span-2 space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">Special Requirements</label>
+                                    <textarea
+                                        value={details.specialRequirements}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, specialRequirements: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[6px] px-[16px] py-[12px] focus:outline-none focus:border-[#D4A853] transition-colors resize-none h-[100px]"
+                                        placeholder="Any specific requirements mentioned in the brief?"
+                                    />
+                                </div>
+                                <div className="col-span-1 md:col-span-2 space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">Extra Context</label>
+                                    <textarea
+                                        value={details.extraContext}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, extraContext: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[6px] px-[16px] py-[12px] focus:outline-none focus:border-[#D4A853] transition-colors resize-none h-[100px]"
+                                        placeholder="Anything your brief didn't cover? Add it here — site orientation, preferred case study references, lecturer preferences etc."
+                                    />
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* Section 3: Select Documents */}
+                        <section className={isInputDisabled ? 'opacity-50 pointer-events-none' : ''}>
+                            <h2 className="text-[24px] font-serif font-bold mb-6 text-[#1B2431]">What do you need?</h2>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {DOCUMENT_OPTIONS.map((doc) => (
+                                    <label key={doc.id} className={`flex items-center gap-3 p-[12px_16px] bg-white border ${selectedDocuments.includes(doc.id) ? 'border-[#D4A853]' : 'border-[#E8E0D0]'} rounded-[6px] hover:border-[#D4A853] cursor-pointer transition-colors`}>
+                                        <input
+                                            type="checkbox"
+                                            checked={selectedDocuments.includes(doc.id)}
+                                            onChange={() => toggleDocument(doc.id)}
+                                            disabled={isInputDisabled}
+                                            className="w-5 h-5 accent-[#D4A853] cursor-pointer rounded"
+                                        />
+                                        <span className="font-medium text-[14px] text-[#1B2431]">{doc.label}</span>
+                                    </label>
+                                ))}
+                            </div>
+                        </section>
+
+                        {/* Submit */}
+                        <div className="pt-4">
+                            <button
+                                onClick={handleGenerate}
+                                disabled={isGenerating || selectedDocuments.length === 0 || !details.buildingType}
+                                className="w-full py-[16px] bg-[#1B2431] text-white rounded-[6px] font-bold text-[16px] tracking-[0.05em] flex items-center justify-center gap-3 hover:bg-[#D4A853] hover:text-[#1B2431] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                {isGenerating ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        {loadingMessage}
+                                    </>
+                                ) : (
+                                    <>
+                                        Generate My Preliminaries
+                                        <ArrowRight className="w-5 h-5" />
+                                    </>
+                                )}
+                            </button>
+                            <p className="text-center text-[#9CA3AF] text-[13px] mt-4 font-medium">
+                                This usually takes 30–60 seconds
+                            </p>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Info Panel */}
+                    <div className="bg-white border border-[#E8E0D0] rounded-[12px] p-[32px] sticky top-32">
+                        <h3 className="text-[20px] font-serif font-bold mb-8 text-[#1B2431]">What happens next</h3>
+
+                        <div className="space-y-6">
+                            {[
+                                { num: '01', title: 'We read your brief', desc: 'Formwork analyzes your brief for constraints, rules, and context.' },
+                                { num: '02', title: 'We generate all selected documents', desc: 'Writing comprehensive architectural texts based on standard methodologies.' },
+                                { num: '03', title: 'You edit, download and submit', desc: 'Review the output, make final tweaks, and export to Word or PDF.' }
+                            ].map((step, i) => (
+                                <div key={i} className="flex gap-4">
+                                    <div className="text-[32px] font-serif font-bold text-[#D4A853] leading-none shrink-0 mt-1">
+                                        {step.num}
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-[#1B2431] mb-1">{step.title}</h4>
+                                        <p className="text-sm text-[#6B7280] leading-relaxed">{step.desc}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="mt-10 p-[16px] bg-[#FFF8EC] border-l-[3px] border-[#D4A853] rounded-[6px]">
+                            <h5 className="font-bold text-xs uppercase tracking-wider text-[#D4A853] mb-1">Tip</h5>
+                            <p className="text-[13px] text-[#6B7280] font-medium leading-relaxed">
+                                The more detail you add in Extra Context, the better your output will be.
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+        </div>
+    )
+}

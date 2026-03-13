@@ -1,0 +1,144 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FAFAF8;
+  --foreground: #1B2431;
+  --accent: #D4A853;
+  --secondary: #F2EFEC;
+  --grid-line: #E8E0D0;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-secondary: var(--secondary);
+  --color-grid-line: var(--grid-line);
+  --color-brand-blue: #1B2431;
+  --color-brand-amber: #D4A853;
+
+  --font-serif: var(--font-playfair), serif;
+  --font-sans: var(--font-dm-sans), sans-serif;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  background-image:
+    linear-gradient(rgba(27, 36, 49, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(27, 36, 49, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  background-position: center center;
+}
+
+h1,
+h2,
+h3,
+.font-serif {
+  font-family: var(--font-serif);
+}
+
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav {
+    display: flex !important;
+  }
+
+  .desktop-nav {
+    display: none;
+  }
+
+  body {
+    padding-bottom: 80px !important;
+  }
+}
+
+/* Architectural Animations */
+@keyframes pencil-draw {
+
+  0%,
+  100% {
+    transform: translateY(0) rotate(-5deg);
+  }
+
+  50% {
+    transform: translateY(-3px) rotate(5deg);
+  }
+}
+
+@keyframes grid-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 0.06;
+  }
+}
+
+@keyframes path-draw {
+  from {
+    stroke-dashoffset: 1000;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes geo-float {
+
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+
+  33% {
+    transform: translate(4px, -2px) rotate(2deg);
+  }
+
+  66% {
+    transform: translate(-2px, 5px) rotate(-1deg);
+  }
+}
+
+@keyframes compass-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes dimension-extend {
+  from {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  *,
+  ::before,
+  ::after {
+    animation-delay: -1ms !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    background-attachment: initial !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0s !important;
+    transition-delay: 0s !important;
+  }
+}
