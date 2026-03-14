@@ -1,6 +1,11 @@
 'use client'
-import Navbar from '@/components/ui/Navbar'
+
+import { useAuth } from '@/lib/auth-context'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
+import Navbar from '@/components/ui/Navbar'
 import { Plus, MoreVertical, LayoutGrid, Folders } from 'lucide-react'
 
 // Mock Data
@@ -27,10 +32,6 @@ const PROJECTS = [
         date: 'Sep 02, 2026',
     }
 ]
-
-import { useAuth } from '@/lib/auth-context'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 
 export default function DashboardPage() {
     const { user, loading } = useAuth()
