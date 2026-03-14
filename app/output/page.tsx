@@ -2,17 +2,13 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-const DOC_LABELS: Record<string, string> = {
-    introduction: 'Introduction',
-    designBrief: 'Design Brief',
-    briefDevelopment: 'Brief Dev',
-    siteAnalysis: 'Site Analysis',
-    sitePlanning: 'Site Planning',
-    caseStudies: 'Case Studies',
-    spatialAnalysis: 'Spatial Analysis',
-    scheduleOfAccommodation: 'Schedule of Accommodation'
-}
+import {
+    generateSheet,
+    getSessionFontIndex,
+    DOC_LABELS,
+    SHEET_NUMBERS,
+    downloadSheet
+} from '@/lib/generate-sheet'
 
 export default function OutputPage() {
     const router = useRouter()
@@ -24,6 +20,17 @@ export default function OutputPage() {
     const [editedContent, setEditedContent] = useState('')
     const [dismissed, setDismissed] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
+    const [fontIndex, setFontIndex] = useState(0)
+
+    useEffect(() => {
+        const sessionId =
+            sessionStorage.getItem('formwork_session_id') ||
+            Math.random().toString(36).substring(2)
+        sessionStorage.setItem(
+            'formwork_session_id', sessionId
+        )
+        setFontIndex(getSessionFontIndex(sessionId))
+    }, [])
 
     useEffect(() => {
         const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -135,6 +142,30 @@ export default function OutputPage() {
         }
     }
 
+    const handlePrintAll = () => {
+        const stored = sessionStorage.getItem(
+            'formwork_output'
+        )
+        if (!stored) return
+        const parsed = JSON.parse(stored)
+
+        parsed.selectedDocuments.forEach(
+            (docType: string, index: number) => {
+                setTimeout(() => {
+                    const pdf = generateSheet({
+                        docType,
+                        docLabel: DOC_LABELS[docType],
+                        content: parsed.documents[docType] || '',
+                        details: parsed.details,
+                        sheetNumber: SHEET_NUMBERS[docType],
+                        fontIndex: fontIndex
+                    })
+                    downloadSheet(pdf, DOC_LABELS[docType])
+                }, index * 800)
+            }
+        )
+    }
+
     const currentContent = editMode
         ? editedContent
         : (documents[activeTab] || '')
@@ -242,8 +273,25 @@ export default function OutputPage() {
                 <div style={{
                     display: 'flex',
                     gap: '8px',
-                    width: isMobile ? '100%' : 'auto'
+                    width: isMobile ? '100%' : 'auto',
+                    alignItems: 'center'
                 }}>
+                    <button
+                        onClick={handlePrintAll}
+                        style={{
+                            background: '#D4A853',
+                            color: '#1B2431',
+                            fontWeight: 600,
+                            padding: '10px 20px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            fontFamily: 'DM Sans, sans-serif',
+                            fontSize: '14px'
+                        }}
+                    >
+                        Print All Sheets
+                    </button>
                     <button
                         onClick={() => handleDownload('pdf')}
                         style={{
@@ -430,6 +478,40 @@ export default function OutputPage() {
                                 }}
                             >
                                 ↻ Regenerate
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    const stored = sessionStorage.getItem(
+                                        'formwork_output'
+                                    )
+                                    if (!stored) return
+                                    const parsed = JSON.parse(stored)
+                                    const pdf = generateSheet({
+                                        docType: activeTab,
+                                        docLabel: DOC_LABELS[activeTab],
+                                        content: documents[activeTab] || '',
+                                        details: parsed.details,
+                                        sheetNumber: SHEET_NUMBERS[activeTab],
+                                        fontIndex: fontIndex
+                                    })
+                                    downloadSheet(pdf, DOC_LABELS[activeTab])
+                                }}
+                                style={{
+                                    padding: '8px 16px',
+                                    background: '#1B2431',
+                                    color: '#FAFAF8',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    fontFamily: 'DM Sans, sans-serif',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
+                                }}
+                            >
+                                🖨 Print Sheet
                             </button>
                         </div>
                     </div>
