@@ -136,7 +136,7 @@ export default function GeneratePage() {
             if (response.status === 400) {
                 const errorData = await response.json()
                 if (errorData.error === 'invalid_project') {
-                    setError(errorData.message)
+                    setError("This doesn't look like an architectural project brief. Formwork is built for architecture students — upload a design brief for a building like a clinic, library, school, market, or any other structure.")
                     setIsGenerating(false)
                     return
                 }
@@ -174,29 +174,6 @@ export default function GeneratePage() {
 
                     {/* Left Column - Input Form */}
                     <div className="space-y-[40px]">
-                        {/* Error Banner */}
-                        {error && (
-                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-[6px] transition-all animate-in fade-in slide-in-from-top-4">
-                                <div className="flex items-start gap-3">
-                                    <div className="shrink-0 text-red-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-sm font-bold text-red-800">Invalid Project Brief</h3>
-                                        <p className="text-xs text-red-700 mt-1 leading-relaxed">
-                                            {error}
-                                        </p>
-                                    </div>
-                                    <button
-                                        onClick={() => setError(null)}
-                                        className="ml-auto text-red-400 hover:text-red-600 transition-colors"
-                                    >
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
                         {/* Page Header */}
                         <div>
                             <h1 className="text-[40px] font-serif font-bold text-[#1B2431] mb-2 leading-tight">Start with your brief</h1>
@@ -204,6 +181,28 @@ export default function GeneratePage() {
                                 Upload your project brief or paste it below. Formwork will handle the rest.
                             </p>
                         </div>
+
+                        {/* Error Banner */}
+                        {error && (
+                            <div className="bg-[#FEF2F2] border border-[#FECACA] p-[16px] rounded-[8px] transition-all animate-in fade-in slide-in-from-top-4 font-sans">
+                                <div className="flex items-start gap-3">
+                                    <div className="shrink-0 text-[#DC2626] mt-0.5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" /><path d="M12 9v4" /><path d="M12 17h.01" /></svg>
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[14px] text-[#DC2626] leading-relaxed font-medium">
+                                            {error}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => setError(null)}
+                                        className="ml-auto text-[#DC2626]/50 hover:text-[#DC2626] transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Section 1: Upload */}
                         <section className="space-y-4">
