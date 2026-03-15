@@ -153,16 +153,16 @@ export default function LandingPage() {
           {/* Architecture Details */}
           <div className="absolute top-0 left-0 w-1 h-full bg-[#D4A853] z-20" />
 
-          <div className="grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-20 items-center w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_450px] gap-20 items-start w-full">
             {/* Left Column: Text Content */}
-            <div className="text-left z-10">
+            <div className="text-left z-10 min-h-[380px] md:min-h-[480px]">
               <div className="inline-block px-4 py-1.5 border border-[#D4A853] text-[#D4A853] text-[10px] font-black tracking-[0.4em] uppercase mb-10 bg-transparent">
                 Architectural Productivity
               </div>
 
               <h1 className="text-6xl md:text-8xl lg:text-[110px] font-serif font-bold tracking-tight mb-12 leading-[0.9] md:leading-[0.85] text-left text-[#1B2431]">
                 Your preliminaries.<br />
-                <span className="text-[#D4A853] inline-flex items-center mt-4 md:mt-6">
+                <span className="text-[#D4A853] inline-flex items-center mt-4 md:mt-6 min-h-[1.1em] min-w-[12ch] md:min-w-[22ch]">
                   {text}
                   <span
                     className="inline-block w-[0.6em] h-[1em] bg-[#D4A853] ml-1"
