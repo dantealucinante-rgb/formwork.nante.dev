@@ -9,6 +9,10 @@ import {
     SHEET_NUMBERS,
     downloadSheet
 } from '@/lib/generate-sheet'
+import {
+    generateSiteAnalysisSheet,
+    downloadSiteAnalysisSVG
+} from '@/lib/sheets/site-analysis-sheet'
 
 export default function OutputPage() {
     const router = useRouter()
@@ -513,6 +517,39 @@ export default function OutputPage() {
                             >
                                 🖨 Print Sheet
                             </button>
+
+                            {activeTab === 'siteAnalysis' && (
+                                <button
+                                    onClick={() => {
+                                        const stored = sessionStorage.getItem(
+                                            'formwork_output'
+                                        )
+                                        if (!stored) return
+                                        const parsed = JSON.parse(stored)
+                                        const svg = generateSiteAnalysisSheet(
+                                            parsed.documents.siteAnalysis || '',
+                                            parsed.details
+                                        )
+                                        downloadSiteAnalysisSVG(
+                                            svg,
+                                            parsed.details.projectTitle || 'project'
+                                        )
+                                    }}
+                                    style={{
+                                        padding: '8px 16px',
+                                        background: '#D4A853',
+                                        color: '#1B2431',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        fontSize: '13px',
+                                        fontWeight: '600',
+                                        cursor: 'pointer',
+                                        fontFamily: 'DM Sans, sans-serif'
+                                    }}
+                                >
+                                    📐 Download Graphic Sheet
+                                </button>
+                            )}
                         </div>
                     </div>
                 </div>
