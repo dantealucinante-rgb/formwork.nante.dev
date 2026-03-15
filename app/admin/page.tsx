@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 import {
     LineChart,
     Line,
@@ -328,7 +329,8 @@ export default function AdminAnalyticsPage() {
                                 <thead>
                                     <tr className="bg-[#2A2D3A]/30">
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A]">Name</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A]">School</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A]">Email</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A]">University</th>
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A] text-center">Gens</th>
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A] text-right">Joined</th>
                                     </tr>
@@ -336,12 +338,8 @@ export default function AdminAnalyticsPage() {
                                 <tbody className="divide-y divide-[#2A2D3A]">
                                     {recentUsers.map((u, i) => (
                                         <tr key={i} className="hover:bg-[#FAFAF8]/5 transition-colors group">
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-[#FAFAF8]">{u.full_name || 'Anonymous'}</span>
-                                                    <span className="text-xs text-[#6B7280]">{u.email}</span>
-                                                </div>
-                                            </td>
+                                            <td className="px-6 py-4 font-bold text-[#FAFAF8]">{u.full_name || 'Anonymous'}</td>
+                                            <td className="px-6 py-4 text-xs text-[#6B7280]">{u.email}</td>
                                             <td className="px-6 py-4 text-[#9CA3AF] text-xs font-medium">{u.university || '—'}</td>
                                             <td className="px-6 py-4 text-center">
                                                 <span className="px-2 py-1 bg-[#D4A853]/10 text-[#D4A853] text-[10px] font-black rounded border border-[#D4A853]/20">
@@ -368,22 +366,25 @@ export default function AdminAnalyticsPage() {
                                 <thead>
                                     <tr className="bg-[#2A2D3A]/30">
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A]">Project</th>
-                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A]">Type</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A]">Building Type</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A]">University</th>
+                                        <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A] text-center">Docs</th>
                                         <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-[#6B7280] border-b border-[#2A2D3A] text-right">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-[#2A2D3A]">
                                     {recentProjects.map((p, i) => (
                                         <tr key={i} className="hover:bg-[#FAFAF8]/5 transition-colors">
-                                            <td className="px-6 py-4">
-                                                <div className="flex flex-col">
-                                                    <span className="font-bold text-[#FAFAF8] line-clamp-1">{p.details?.projectTitle}</span>
-                                                    <span className="text-xs text-[#6B7280]">{p.university}</span>
-                                                </div>
-                                            </td>
+                                            <td className="px-6 py-4 font-bold text-[#FAFAF8] line-clamp-1">{p.details?.projectTitle}</td>
                                             <td className="px-6 py-4">
                                                 <span className="text-[10px] font-black uppercase tracking-[0.1em] text-[#60A5FA]">
                                                     {p.details?.buildingType}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-4 text-xs text-[#9CA3AF]">{p.university}</td>
+                                            <td className="px-6 py-4 text-center">
+                                                <span className="text-xs font-bold text-[#D4A853]">
+                                                    {p.details?.selectedDocuments?.length || 0}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4 text-right text-xs text-[#6B7280] font-bold">
