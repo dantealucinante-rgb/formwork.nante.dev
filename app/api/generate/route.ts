@@ -25,12 +25,17 @@ async function generateDocument(
     docType: string,
     details: ProjectDetails
 ): Promise<string> {
+    const localizedSystemBase = SYSTEM_BASE.replace(
+        /{buildingType}/g,
+        details.buildingType || 'the specified building'
+    )
+
     const completion = await groq.chat.completions.create({
         model: 'llama-3.3-70b-versatile',
         max_tokens: 1000,
         temperature: 0.7,
         messages: [
-            { role: 'system', content: SYSTEM_BASE },
+            { role: 'system', content: localizedSystemBase },
             {
                 role: 'user',
                 content: buildPrompt(docType, details)
@@ -62,9 +67,10 @@ You are validating an architectural project brief.
 Determine if this is a legitimate architectural 
 building design project.
 
-Building type: ${details.buildingType}
-Project title: ${details.projectTitle}
-Users: ${details.users}
+Building type: ${details.buildingType || 'Not specified'}
+Project title: ${details.projectTitle || 'Not specified'}
+Users: ${details.users || 'Not specified'}
+Brief Content: ${details.rawText?.substring(0, 1000) || 'None provided'}
 
 A legitimate architectural project involves 
 designing a physical building or structure.

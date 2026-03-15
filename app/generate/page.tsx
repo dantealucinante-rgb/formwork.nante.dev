@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/ui/Navbar'
-import { Upload, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react'
+import { Upload, ArrowRight, CheckCircle2, Loader2, FileText, Type } from 'lucide-react'
 
 const DOCUMENT_OPTIONS = [
     { id: 'introduction', label: 'Introduction' },
@@ -20,14 +20,23 @@ export default function GeneratePage() {
     const router = useRouter()
 
     // UI State
-    const [pasteMode, setPasteMode] = useState(false)
+    const [inputMode, setInputMode] = useState<'pdf' | 'text'>('pdf')
     const [file, setFile] = useState<File | null>(null)
     const [briefText, setBriefText] = useState('')
+
+    // Initialize input mode based on screen width
+    useEffect(() => {
+        if (typeof window !== 'undefined' && window.innerWidth < 768) {
+            setInputMode('text')
+        }
+    }, [])
 
     // Process State
     const [isExtracting, setIsExtracting] = useState(false)
     const [isGenerating, setIsGenerating] = useState(false)
     const [loadingMessage, setLoadingMessage] = useState('Reading your brief...')
+
+    const isInputDisabled = isExtracting || isGenerating;
 
     // Data State
     const [error, setError] = useState<string | null>(null)
@@ -123,14 +132,29 @@ export default function GeneratePage() {
 
     const handleGenerate = async () => {
         if (selectedDocuments.length === 0) return
+        if (inputMode === 'pdf' && !file && !details.rawText) return
+        if (inputMode === 'text' && !briefText) return
 
         setIsGenerating(true)
+        setError(null)
 
         try {
+            // If in text mode, ensure rawText is set from briefText
+            const finalDetails = { ...details }
+            if (inputMode === 'text') {
+                finalDetails.rawText = briefText
+                // For direct text input, we also use it as extra context to guide the prompt better
+                finalDetails.extraContext = briefText
+            }
+
             const response = await fetch('/api/generate', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ details, selectedDocuments })
+                body: JSON.stringify({
+                    details: finalDetails,
+                    selectedDocuments,
+                    mode: inputMode
+                })
             })
 
             if (response.status === 400) {
@@ -162,8 +186,6 @@ export default function GeneratePage() {
             setIsGenerating(false)
         }
     }
-
-    const isInputDisabled = isExtracting || isGenerating;
 
     return (
         <div className="min-h-screen flex flex-col bg-[#FAFAF8] text-[#1B2431]">
@@ -204,9 +226,35 @@ export default function GeneratePage() {
                             </div>
                         )}
 
-                        {/* Section 1: Upload */}
+                        {/* Input Mode Toggle */}
+                        <div className="flex w-full rounded-[10px] bg-white border border-[#E8E0D0] p-1 gap-1">
+                            <button
+                                onClick={() => setInputMode('pdf')}
+                                disabled={isInputDisabled}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-[8px] font-sans font-bold text-[14px] transition-all ${inputMode === 'pdf'
+                                    ? 'bg-[#1B2431] text-white border-b-2 border-[#D4A853] shadow-md'
+                                    : 'text-[#6B7280] hover:bg-slate-50'
+                                    }`}
+                            >
+                                <FileText className={`w-4 h-4 ${inputMode === 'pdf' ? 'text-[#D4A853]' : ''}`} />
+                                Upload PDF
+                            </button>
+                            <button
+                                onClick={() => setInputMode('text')}
+                                disabled={isInputDisabled}
+                                className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-[8px] font-sans font-bold text-[14px] transition-all ${inputMode === 'text'
+                                    ? 'bg-[#1B2431] text-white border-b-2 border-[#D4A853] shadow-md'
+                                    : 'text-[#6B7280] hover:bg-slate-50'
+                                    }`}
+                            >
+                                <Type className={`w-4 h-4 ${inputMode === 'text' ? 'text-[#D4A853]' : ''}`} />
+                                Paste Text
+                            </button>
+                        </div>
+
+                        {/* Section 1: Input Area */}
                         <section className="space-y-4">
-                            {!pasteMode ? (
+                            {inputMode === 'pdf' ? (
                                 <div
                                     onDrop={handleDrop}
                                     onDragOver={handleDragOver}
@@ -253,26 +301,21 @@ export default function GeneratePage() {
                                     )}
                                 </div>
                             ) : (
-                                <div className={`border border-[#E8E0D0] bg-white rounded-[12px] overflow-hidden focus-within:border-[#D4A853] transition-colors shadow-sm ${isInputDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
-                                    <textarea
-                                        className="w-full h-[300px] p-[24px] focus:outline-none resize-none bg-transparent"
-                                        placeholder="Paste your brief content here..."
-                                        value={briefText}
-                                        onChange={(e) => handleBriefTextChange(e.target.value)}
-                                        disabled={isInputDisabled}
-                                    />
+                                <div className="space-y-3 font-sans">
+                                    <div className={`border border-[#E8E0D0] bg-white rounded-[8px] overflow-hidden focus-within:border-[#D4A853] shadow-sm transition-all ${isInputDisabled ? 'opacity-50 pointer-events-none text-slate-400 select-none cursor-not-allowed' : ''}`}>
+                                        <textarea
+                                            className="w-full min-h-[280px] p-[16px] focus:outline-none resize-y bg-transparent text-[14px] leading-relaxed"
+                                            placeholder="Paste your project brief here — copy it from your assignment sheet, WhatsApp, Google Docs, or anywhere else."
+                                            value={briefText}
+                                            onChange={(e) => handleBriefTextChange(e.target.value)}
+                                            disabled={isInputDisabled}
+                                        />
+                                    </div>
+                                    <p className="text-[12px] text-[#9CA3AF] font-medium leading-tight px-1">
+                                        Tip: Include as much detail as possible — building type, location, users, capacity and any special requirements.
+                                    </p>
                                 </div>
                             )}
-
-                            <div className="text-center mt-2">
-                                <button
-                                    onClick={() => setPasteMode(!pasteMode)}
-                                    className="text-[14px] font-medium text-[#D4A853] hover:underline hover:text-[#1B2431] transition-colors"
-                                    disabled={isInputDisabled}
-                                >
-                                    or {pasteMode ? 'upload a document' : 'paste your brief as text'}
-                                </button>
-                            </div>
                         </section>
 
                         {/* Section 2: Project Details */}
@@ -401,7 +444,7 @@ export default function GeneratePage() {
                         <div className="pt-4">
                             <button
                                 onClick={handleGenerate}
-                                disabled={isGenerating || selectedDocuments.length === 0 || !details.buildingType}
+                                disabled={isGenerating || selectedDocuments.length === 0 || (inputMode === 'pdf' && !file && !details.rawText) || (inputMode === 'text' && !briefText)}
                                 className="w-full py-[16px] bg-[#1B2431] text-white rounded-[6px] font-bold text-[16px] tracking-[0.05em] flex items-center justify-center gap-3 hover:bg-[#D4A853] hover:text-[#1B2431] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {isGenerating ? (
