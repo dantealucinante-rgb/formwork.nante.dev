@@ -11,7 +11,15 @@ export type Profile = {
     email: string
     full_name: string | null
     avatar_url: string | null
-    generations_used: number
+    university: string | null
+    year_of_study: string | null
+    matric_number: string | null
+    total_generations: number
+    total_documents: number
+    last_active: string | null
+    default_university: string | null
+    default_documents: string[] | null
+    preferred_format: string | null
     created_at: string
 }
 
