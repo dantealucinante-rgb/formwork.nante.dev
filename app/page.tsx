@@ -1,3 +1,6 @@
+'use client'
+
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import {
   FileText,
@@ -15,6 +18,47 @@ import Navbar from '@/components/ui/Navbar'
 
 export default function LandingPage() {
   const currentYear = new Date().getFullYear();
+
+  const phrases = [
+    "Done in minutes.",
+    "Ready to submit.",
+    "Built for students.",
+    "No more stressing.",
+    "Just upload and go.",
+    "Nine docs. One click.",
+    "Your brief. Our words."
+  ];
+
+  const [text, setText] = useState("");
+  const [phaseIndex, setPhaseIndex] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [typingSpeed, setTypingSpeed] = useState(38);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const currentFullText = phrases[phaseIndex];
+
+      if (isDeleting) {
+        setText(currentFullText.substring(0, text.length - 1));
+        setTypingSpeed(28); // Faster deleting
+      } else {
+        setText(currentFullText.substring(0, text.length + 1));
+        setTypingSpeed(38); // Typing speed
+      }
+
+      if (!isDeleting && text === currentFullText) {
+        // Pause after typing
+        setTypingSpeed(1400);
+        setIsDeleting(true);
+      } else if (isDeleting && text === "") {
+        setIsDeleting(false);
+        setPhaseIndex((prev) => (prev + 1) % phrases.length);
+        setTypingSpeed(38);
+      }
+    }, typingSpeed);
+
+    return () => clearTimeout(timer);
+  }, [text, isDeleting, phaseIndex, typingSpeed]);
 
   return (
     <div className="flex flex-col min-h-screen bg-[#FAFAF8] text-[#1B2431] selection:bg-[#D4A853] selection:text-[#1B2431]">
@@ -118,7 +162,13 @@ export default function LandingPage() {
 
               <h1 className="text-6xl md:text-8xl lg:text-[110px] font-serif font-bold tracking-tight mb-12 leading-[0.9] md:leading-[0.85] text-left text-[#1B2431]">
                 Your preliminaries.<br />
-                <span className="text-[#D4A853] block mt-4 md:mt-6">Done in minutes.</span>
+                <span className="text-[#D4A853] inline-flex items-center mt-4 md:mt-6">
+                  {text}
+                  <span
+                    className="inline-block w-[0.6em] h-[1em] bg-[#D4A853] ml-1"
+                    style={{ animation: 'blink 1s step-end infinite' }}
+                  />
+                </span>
               </h1>
 
               <p className="text-lg md:text-2xl text-[#4A5568] mb-12 max-w-2xl text-left leading-relaxed font-medium">
