@@ -56,7 +56,55 @@ export async function POST(request: NextRequest) {
         const docsToGenerate = selectedDocuments || Object.keys(PROMPTS)
         const results: Record<string, string> = {}
 
-        // Generate all documents in parallel
+        // 1. Validate if this is an architectural project
+        const validationPrompt = `
+You are validating an architectural project brief.
+Determine if this is a legitimate architectural 
+building design project.
+
+Building type: ${details.buildingType}
+Project title: ${details.projectTitle}
+Users: ${details.users}
+
+A legitimate architectural project involves 
+designing a physical building or structure.
+
+Examples of VALID projects:
+- Snack bar, library, school, hospital, 
+  community centre, house, office building,
+  market, mosque, church, hotel, clinic
+
+Examples of INVALID projects:
+- CV, resume, document, website, app,
+  logo, brand, poster, report
+
+Respond with ONLY a JSON object:
+{"valid": true} or {"valid": false, "reason": "explanation"}
+`
+
+        const validationResponse = await groq.chat.completions.create({
+            model: 'llama-3.3-70b-versatile',
+            messages: [{ role: 'user', content: validationPrompt }],
+            max_tokens: 50
+        })
+
+        const validationText = validationResponse.choices[0]
+            ?.message?.content?.trim() || '{}'
+
+        try {
+            const validation = JSON.parse(validationText)
+            if (!validation.valid) {
+                return NextResponse.json({
+                    error: 'invalid_project',
+                    message: validation.reason ||
+                        'This does not appear to be an architectural building project. Please upload a valid architectural design brief.'
+                }, { status: 400 })
+            }
+        } catch {
+            // If validation parsing fails, continue
+        }
+
+        // 2. Generate all documents in parallel
         await Promise.all(
             docsToGenerate.map(async (docType: string) => {
                 if (PROMPTS[docType]) {

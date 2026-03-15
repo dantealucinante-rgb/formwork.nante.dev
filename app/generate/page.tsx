@@ -30,6 +30,7 @@ export default function GeneratePage() {
     const [loadingMessage, setLoadingMessage] = useState('Reading your brief...')
 
     // Data State
+    const [error, setError] = useState<string | null>(null)
     const [details, setDetails] = useState({
         projectTitle: '',
         buildingType: '',
@@ -132,6 +133,15 @@ export default function GeneratePage() {
                 body: JSON.stringify({ details, selectedDocuments })
             })
 
+            if (response.status === 400) {
+                const errorData = await response.json()
+                if (errorData.error === 'invalid_project') {
+                    setError(errorData.message)
+                    setIsGenerating(false)
+                    return
+                }
+            }
+
             const data = await response.json()
 
             if (data.success) {
@@ -147,6 +157,7 @@ export default function GeneratePage() {
             }
         } catch (error) {
             console.error('Generation failed:', error)
+            setError('An unexpected error occurred. Please try again.')
         } finally {
             setIsGenerating(false)
         }
@@ -163,6 +174,29 @@ export default function GeneratePage() {
 
                     {/* Left Column - Input Form */}
                     <div className="space-y-[40px]">
+                        {/* Error Banner */}
+                        {error && (
+                            <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-[6px] transition-all animate-in fade-in slide-in-from-top-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="shrink-0 text-red-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-bold text-red-800">Invalid Project Brief</h3>
+                                        <p className="text-xs text-red-700 mt-1 leading-relaxed">
+                                            {error}
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={() => setError(null)}
+                                        className="ml-auto text-red-400 hover:text-red-600 transition-colors"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Page Header */}
                         <div>
                             <h1 className="text-[40px] font-serif font-bold text-[#1B2431] mb-2 leading-tight">Start with your brief</h1>

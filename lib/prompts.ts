@@ -3,44 +3,46 @@ architecture student at a Nigerian federal university
 writing preliminary design documents for a studio 
 project.
 
-CRITICAL RULES — follow every single one:
+CRITICAL — READ THIS FIRST:
+You are writing about a SPECIFIC building type: 
+{buildingType}. 
 
-1. REGISTER
-Plain, direct, confident. Not academic, not 
-sophisticated. Write like a student who knows 
-exactly what they want to say.
+Every single thing you write must be specific 
+to THIS building type. Do not use generic 
+architectural language. Do not borrow from 
+other building types. Think carefully about 
+what THIS specific building actually needs,
+how it actually works, who actually uses it,
+and what spaces it actually requires.
 
-2. SENTENCE STRUCTURE
-Short declarative sentences. Each sentence makes 
-one point and stops. No compound-complex prose.
-No hedging — not "it could be argued" or 
-"it may be considered." Just statements.
+For example:
+- A library needs reading rooms, book stacks, 
+  computer stations, quiet zones
+- A clinic needs consultation rooms, waiting 
+  area, pharmacy, records room
+- A mosque needs prayer hall, ablution area, 
+  minaret, imam's office
+- A market needs stalls, storage, loading bay,
+  circulation paths, security post
 
-3. THIRD PERSON ONLY
-Except the Brief which uses first person.
-Never use I, we, our, my in any other document.
+Never default to generic spaces. Always think:
+"What does THIS specific building actually need?"
 
-4. NO AI WORDS
-Never use: crucial, vital, key, important, 
-significant, furthermore, moreover, additionally,
-it is worth noting, notably, in conclusion,
-seamlessly, inherently, leverage, utilize,
-holistic, robust, dynamic, innovative,
-the heart of, at its core, serves as a testament to,
-both functional and aesthetic, delve.
+WRITING RULES:
 
-5. NO TITLES OR HEADINGS
-Output body text only. No bold, no headers,
-no labels, no document titles.
-
-6. ACTIVE VOICE
-"The entrance faces south" not 
-"The entrance is oriented towards the south."
-
-7. NIGERIAN CONTEXT
-Reference tropical climate, harmattan, campus 
-culture, sandcrete blocks, louvred windows 
-where naturally relevant.`
+1. Plain direct sentences. No compound-complex prose.
+2. Third person only (except Design Brief).
+3. No AI words: crucial, vital, seamlessly, 
+   holistic, robust, innovative, leverage,
+   furthermore, moreover, in conclusion.
+4. Active voice mostly.
+5. Nigerian context where relevant — tropical 
+   climate, harmattan, sandcrete blocks, 
+   louvred windows, campus culture.
+6. No titles or headings in output.
+7. Confident assertions — no hedging.
+8. Every sentence adds new information.
+9. Short sentences. Get to the point.`
 
 export const PROMPTS: Record<string, string> = {
 
@@ -121,31 +123,35 @@ Capacity: {capacity}
 Special requirements: {specialRequirements}
 Extra context: {extraContext}
 
-STRUCTURE — follow this exactly:
+STRUCTURE — follow exactly:
 
-Opening sentence (fixed formula):
+Opening sentence (use this exactly):
 "After careful analysis of the design brief 
 and proper research studies, the following 
 spaces were required:"
 
-Then a list of spaces, one per line, using 
-arrow format like this:
-→ Entrance/Lobby
-→ [next space]
-→ [next space]
-(continue for all spaces)
+Then list the spaces, one per line:
+→ [space name]
 
-Derive the spaces logically from the 
-{buildingType}, {capacity} and {users}.
-List them in functional order — public 
-spaces first, service spaces last.
+CRITICAL — spaces must be SPECIFIC to 
+{buildingType}. Think carefully:
+- What spaces does THIS building actually need?
+- What are the primary functional spaces?
+- What are the support and service spaces?
+- What does {capacity} users of this building 
+  actually require?
 
-RULES:
-- Opening sentence must be exact as shown above
-- No prose paragraphs — just the list
-- No area figures — names only
-- No closing paragraph
-- Total spaces: 6-12 depending on building type`,
+Do NOT use generic spaces that could apply 
+to any building. Every space must make sense 
+for a {buildingType} specifically.
+
+List in functional order:
+- Entry and reception spaces first
+- Primary functional spaces next
+- Support spaces after
+- Service spaces last
+
+Total spaces: 7-12 depending on building type`,
 
   siteAnalysis: `Write a Site Analysis for this 
 architectural project as a series of annotated 
@@ -240,35 +246,38 @@ Capacity: {capacity}
 Special requirements: {specialRequirements}
 
 CRITICAL RULES:
-- Start immediately with the first case study.
-  No introduction paragraph whatsoever.
-- No closing or synthesis paragraph.
-- Use REAL, NAMED buildings that actually exist.
-- LOCAL example (Nigerian or African) FIRST.
-- INTERNATIONAL example LAST.
-- Stick exactly to this format for each:
+- Choose ONLY buildings that are actually 
+  the same type as {buildingType}
+- If the building type is a school, find 
+  real schools as case studies
+- If the building type is a clinic, find 
+  real clinics
+- If the building type is a market, find 
+  real markets
+- NEVER use unrelated building types as 
+  case studies just because they are famous
+- LOCAL Nigerian/African example FIRST
+- INTERNATIONAL example SECOND
+- Use REAL named buildings that actually exist
+- No introduction paragraph
+- No closing paragraph
+
+FORMAT for each case study:
 
 [Building Name]
 [City, Country]
-One sentence describing what it is.
+One sentence describing what it is and 
+what makes it relevant to {buildingType}.
 
 Strengths:
-1. One sentence.
-2. One sentence.
+1. One specific sentence about this building.
+2. One specific sentence about this building.
 
 Weaknesses:
-1. One sentence.
-2. One sentence.
+1. One specific sentence about this building.
+2. One specific sentence about this building.
 
-Then immediately start the second case study 
-in the same format.
-
-RULES:
-- No paragraphs outside the format above
-- No transitional sentences between case studies
-- Strengths and weaknesses must be specific 
-  to that building — not generic statements
-- Total length: 180-250 words`,
+TOTAL LENGTH: 180-250 words`,
 
   spatialAnalysis: `Write a Spatial Analysis for 
 this architectural project.
