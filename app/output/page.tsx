@@ -13,6 +13,7 @@ import {
     generateSiteAnalysisSheet,
     downloadSiteAnalysisSVG
 } from '@/lib/sheets/site-analysis-sheet'
+import { useAuth } from '@/lib/auth-context'
 
 export default function OutputPage() {
     const router = useRouter()
@@ -25,6 +26,8 @@ export default function OutputPage() {
     const [dismissed, setDismissed] = useState(false)
     const [isMobile, setIsMobile] = useState(false)
     const [fontIndex, setFontIndex] = useState(0)
+    const [showAuthModal, setShowAuthModal] = useState(false)
+    const { user } = useAuth()
 
     useEffect(() => {
         const sessionId =
@@ -111,6 +114,10 @@ export default function OutputPage() {
     }
 
     const handleDownload = async (format: 'pdf' | 'word') => {
+        if (!user) {
+            setShowAuthModal(true)
+            return
+        }
         try {
             const stored = sessionStorage.getItem('formwork_output')
             if (!stored) return
@@ -147,6 +154,10 @@ export default function OutputPage() {
     }
 
     const handlePrintAll = () => {
+        if (!user) {
+            setShowAuthModal(true)
+            return
+        }
         const stored = sessionStorage.getItem(
             'formwork_output'
         )
@@ -486,6 +497,10 @@ export default function OutputPage() {
 
                             <button
                                 onClick={() => {
+                                    if (!user) {
+                                        setShowAuthModal(true)
+                                        return
+                                    }
                                     const stored = sessionStorage.getItem(
                                         'formwork_output'
                                     )
@@ -521,6 +536,10 @@ export default function OutputPage() {
                             {activeTab === 'siteAnalysis' && (
                                 <button
                                     onClick={() => {
+                                        if (!user) {
+                                            setShowAuthModal(true)
+                                            return
+                                        }
                                         const stored = sessionStorage.getItem(
                                             'formwork_output'
                                         )
@@ -554,6 +573,104 @@ export default function OutputPage() {
                     </div>
                 </div>
             </div>
+            {/* Authentication Modal */}
+            {showAuthModal && (
+                <div style={{
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 1000,
+                    background: 'rgba(27, 36, 49, 0.7)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '24px'
+                }}>
+                    <div style={{
+                        background: '#1B2431',
+                        color: '#FAFAF8',
+                        width: '100%',
+                        maxWidth: '400px',
+                        padding: '32px',
+                        borderRadius: '12px',
+                        textAlign: 'center',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                        position: 'relative'
+                    }}>
+                        <button
+                            onClick={() => setShowAuthModal(false)}
+                            style={{
+                                position: 'absolute',
+                                top: '16px',
+                                right: '16px',
+                                background: 'none',
+                                border: 'none',
+                                color: '#FAFAF8',
+                                fontSize: '24px',
+                                cursor: 'pointer',
+                                opacity: 0.6
+                            }}
+                        >
+                            ×
+                        </button>
+                        <h2 style={{
+                            fontSize: '24px',
+                            fontWeight: 700,
+                            marginBottom: '12px',
+                            color: '#FAFAF8'
+                        }}>
+                            Sign in to download your documents
+                        </h2>
+                        <p style={{
+                            fontSize: '15px',
+                            color: '#e2e8f0',
+                            marginBottom: '32px',
+                            lineHeight: '1.6'
+                        }}>
+                            Create a free account to export your work as PDF or Word.
+                        </p>
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                        }}>
+                            <button
+                                onClick={() => router.push('/auth/signup')}
+                                style={{
+                                    padding: '12px',
+                                    background: '#D4A853',
+                                    color: '#1B2431',
+                                    border: 'none',
+                                    borderRadius: '6px',
+                                    fontWeight: 700,
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}
+                            >
+                                Create Account
+                            </button>
+                            <button
+                                onClick={() => router.push('/auth/signin')}
+                                style={{
+                                    padding: '12px',
+                                    background: 'transparent',
+                                    color: '#D4A853',
+                                    border: '2px solid #D4A853',
+                                    borderRadius: '6px',
+                                    fontWeight: 700,
+                                    fontSize: '14px',
+                                    cursor: 'pointer',
+                                    textTransform: 'uppercase',
+                                    letterSpacing: '0.05em'
+                                }}
+                            >
+                                Sign In
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

@@ -34,8 +34,25 @@ const PROJECTS = [
 ]
 
 export default function DashboardPage() {
-    const { user, loading } = useAuth()
+    const { user, profile, loading } = useAuth()
     const router = useRouter()
+    const [greeting, setGreeting] = useState('')
+
+    const GREETINGS = [
+        'Welcome back,',
+        'Good to see you,',
+        'Hello again,',
+        'Ready to design,',
+        'Back at it,',
+        'Great to have you,',
+    ]
+
+    useEffect(() => {
+        const random = GREETINGS[
+            Math.floor(Math.random() * GREETINGS.length)
+        ]
+        setGreeting(random)
+    }, [])
 
     useEffect(() => {
         if (!loading && !user) {
@@ -62,7 +79,11 @@ export default function DashboardPage() {
 
     if (!user) return null
 
-    const hasProjects = PROJECTS.length > 0;
+    const rawName = profile?.full_name || user?.email?.split('@')[0] || 'Architect'
+    const name = rawName.charAt(0).toUpperCase() + rawName.slice(1)
+
+    const projectsCount = PROJECTS.length;
+    const hasProjects = projectsCount > 0;
 
     return (
         <div className="min-h-screen flex flex-col bg-[#FAFAF8] text-[#1B2431]">
@@ -70,16 +91,21 @@ export default function DashboardPage() {
 
             <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-8">
                 {/* Header */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 mb-12">
-                    <div>
-                        <h1 className="text-4xl md:text-5xl font-serif font-bold text-[#1B2431] mb-2">My Projects</h1>
-                        <p className="text-[#6B7280] font-medium">Manage your generated architectural preliminaries.</p>
+                <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-6 mb-12">
+                    <div className="text-center sm:text-left">
+                        <p className="text-[#6B7280] text-base mb-1 font-medium">{greeting}</p>
+                        <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#1B2431] leading-tight mb-2">
+                            {name}, Architect.
+                        </h1>
+                        <p className="text-[#9CA3AF] text-sm font-bold uppercase tracking-[0.1em]">
+                            {projectsCount} {projectsCount === 1 ? 'project' : 'projects'} saved
+                        </p>
                     </div>
                     <Link
                         href="/generate"
-                        className="flex items-center gap-2 px-6 py-3 bg-[#1B2431] text-white font-black text-sm uppercase tracking-wider shadow-[4px_4px_0px_rgba(0,0,0,0.05)] hover:bg-[#D4A853] hover:text-[#1B2431] transition-all active:translate-x-0.5 active:translate-y-0.5 w-full sm:w-auto justify-center"
+                        className="flex items-center gap-2 px-8 py-4 bg-[#D4A853] text-[#1B2431] font-black text-xs uppercase tracking-widest shadow-[4px_4px_0px_rgba(0,0,0,0.05)] hover:bg-[#1B2431] hover:text-white transition-all active:translate-x-0.5 active:translate-y-0.5 w-full sm:w-auto justify-center"
                     >
-                        <Plus className="w-4 h-4" />
+                        <Plus className="w-5 h-5" />
                         New Project
                     </Link>
                 </div>
