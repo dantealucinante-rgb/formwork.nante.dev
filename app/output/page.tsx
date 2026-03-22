@@ -158,10 +158,9 @@ export default function OutputPage() {
     }
 
     const handlePrintSheet = async (docType: string) => {
-        if (!user) {
-            setShowAuthModal(true)
-            return
-        }
+        console.log('handlePrintSheet called for:', docType)
+        console.log('activeTab:', activeTab)
+
         const stored = sessionStorage.getItem('formwork_output')
         if (!stored) return
         const parsed = JSON.parse(stored)
@@ -175,43 +174,22 @@ export default function OutputPage() {
         let illustrationBase64 = ''
 
         if (illustrationDocs.includes(docType)) {
-            // Check if already fetched
-            if (illustrations[docType]) {
-                illustrationBase64 = illustrations[docType]
-            } else {
-                setFetchingIllustration(true)
-                setIllustrationWarning('')
+            setFetchingIllustration(true)
 
-                // 35s timeout fallback
-                const timeoutPromise = new Promise<string>((_, reject) =>
-                    setTimeout(() => reject(new Error('timeout')), 35000)
+            try {
+                const result = await fetchIllustrationAsBase64(
+                    docType,
+                    parsed.details
                 )
-
-                try {
-                    illustrationBase64 = await Promise.race([
-                        fetchIllustrationAsBase64(docType, parsed.details),
-                        timeoutPromise
-                    ])
-                } catch (err) {
-                    console.error('Illustration handle error:', err)
-                    if (err instanceof Error && err.message === 'timeout') {
-                        setIllustrationWarning('Illustration timed out — downloading sheet without illustration')
-                    } else {
-                        setIllustrationWarning('Illustration unavailable — downloading sheet without image')
-                    }
-                    setTimeout(() => setIllustrationWarning(''), 5000)
-                    illustrationBase64 = ''
-                }
-
-                setIllustrations(prev => ({
-                    ...prev,
-                    [docType]: illustrationBase64
-                }))
+                illustrationBase64 = result
+                console.log('Got illustration, length:',
+                    illustrationBase64?.length || 0)
+            } catch (err) {
+                console.error('Illustration fetch error:', err)
+            } finally {
                 setFetchingIllustration(false)
             }
         }
-
-        console.log('illustrationBase64 length before generateSheet:', illustrationBase64.length)
 
         const pdf = generateSheet({
             docType,
@@ -220,11 +198,12 @@ export default function OutputPage() {
             details: parsed.details,
             sheetNumber: SHEET_NUMBERS[docType],
             fontIndex,
-            illustrationBase64
+            illustrationBase64: illustrationBase64 || undefined
         })
 
         downloadSheet(pdf, DOC_LABELS[docType])
     }
+
 
     const currentContent = editMode
         ? editedContent
