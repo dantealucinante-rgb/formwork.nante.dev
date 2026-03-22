@@ -6,11 +6,11 @@ export async function POST(request: NextRequest) {
         console.log('Illustration API called:', { docType, buildingType })
 
         const PROMPTS: Record<string, string> = {
-            introduction: `architectural pencil sketch of a ${buildingType}, bold black ink on white paper, hand drawn, thick outlines, no color, no shading, simple clean lines, architectural illustration style, front elevation view, minimalist`,
+            introduction: `${buildingType} architectural sketch, bold black ink, hand drawn, thick outlines, white background, no color`,
 
-            designBrief: `architect student at drawing board sketching plans, bold black ink illustration, hand drawn style, thick outlines, no color, black and white only, simple bold shapes, architectural sketch aesthetic, person holding pencil over technical drawing`,
+            designBrief: `architect drawing plans at desk, bold black ink sketch, hand drawn, thick outlines, white background, no color`,
 
-            briefDevelopment: `abstract architectural concept bubbles and zones, bold black ink on white, hand drawn organic shapes, spatial planning diagram, thick outlines, no color, simple bold illustration, circles and rectangles suggesting spaces, architectural sketch style`
+            briefDevelopment: `architectural bubble diagram, bold black ink, hand drawn circles and zones, white background, no color`
         }
 
         const prompt = PROMPTS[docType]
@@ -23,13 +23,27 @@ export async function POST(request: NextRequest) {
 
         const encodedPrompt = encodeURIComponent(prompt)
         const seed = Math.floor(Math.random() * 99999)
-        const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=500&height=380&nologo=true&seed=${seed}&model=flux`
+        const url = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=500&height=380&nologo=true&seed=${seed}`
         console.log('Fetching from Pollinations:', url)
 
-        const response = await fetch(url, {
-            method: 'GET',
-            headers: { 'Accept': 'image/*' }
-        })
+        const fetchWithRetry = async (url: string) => {
+            let response = await fetch(url, {
+                method: 'GET',
+                headers: { 'Accept': 'image/*' }
+            })
+
+            if (!response.ok) {
+                console.log('First attempt failed, retrying in 2 seconds...')
+                await new Promise(r => setTimeout(r, 2000))
+                response = await fetch(url, {
+                    method: 'GET',
+                    headers: { 'Accept': 'image/*' }
+                })
+            }
+            return response
+        }
+
+        const response = await fetchWithRetry(url)
         console.log('Pollinations response status:', response.status)
         console.log('Pollinations content-type:', response.headers.get('content-type'))
 
