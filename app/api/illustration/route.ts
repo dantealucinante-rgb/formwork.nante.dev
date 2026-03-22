@@ -5,11 +5,11 @@ export async function POST(request: NextRequest) {
         const { docType, buildingType } = await request.json()
 
         const PROMPTS: Record<string, string> = {
-            introduction: `${buildingType} building, architectural sketch, bold black ink lines, hand drawn, white background, no color, thick outlines, simple elevation view`,
+            introduction: `hand drawn architectural elevation sketch of a ${buildingType}, black ink on white paper, bold strokes, simple building outline, doors and windows visible, no color, no shading, architectural student drawing style`,
 
-            designBrief: `architect at drawing board, bold black ink illustration, hand drawn style, white background, no color, thick outlines, simple sketch`,
+            designBrief: `hand drawn sketch of architect holding pencil over floor plan drawing, black ink illustration, bold lines, white background, no color, simple bold shapes, person leaning over drawing table, architectural concept art`,
 
-            briefDevelopment: `architectural space planning bubbles, bold black ink, hand drawn circles and zones, white background, no color, thick outlines, diagram style`
+            briefDevelopment: `hand drawn architectural bubble diagram with labeled zones, black ink on white, circles of different sizes connected by lines, some circles contain small furniture symbols, bold strokes, spatial planning sketch, no color, architecture student style`
         }
 
         const prompt = PROMPTS[docType]
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
             )
         }
 
-        const negativePrompt = 'color, realistic, photo, 3d render, gradient, shadow, shading, gray background, dark background'
+        const negativePrompt = 'color, realistic photo, 3d render, gradient, gray background, dark background, watercolor, painting, blurry, photorealistic, computer generated'
 
         const controller = new AbortController()
         const timeout = setTimeout(() => controller.abort(), 90000)
