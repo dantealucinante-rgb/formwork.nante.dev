@@ -43,41 +43,22 @@ export async function fetchIllustrationAsBase64(
     details: Record<string, any>
 ): Promise<string> {
     try {
-        const url = await fetchIllustration(
-            docType, details
-        )
-        if (!url) return ''
-
-        console.log('Fetching illustration from:', url)
-
-        return new Promise((resolve) => {
-            const img = new Image()
-            img.crossOrigin = 'anonymous'
-
-            img.onload = () => {
-                const canvas = document.createElement('canvas')
-                canvas.width = img.width || 500
-                canvas.height = img.height || 380
-                const ctx = canvas.getContext('2d')
-                if (!ctx) {
-                    resolve('')
-                    return
-                }
-                ctx.drawImage(img, 0, 0)
-                const base64 = canvas.toDataURL('image/jpeg', 0.85)
-                resolve(base64)
-            }
-
-            img.onerror = () => {
-                console.error('Image failed to load:', url)
-                resolve('')
-            }
-
-            // Add timestamp to bust cache
-            img.src = url + '&t=' + Date.now()
+        const response = await fetch('/api/illustration', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                docType,
+                buildingType: details.buildingType || 'building'
+            })
         })
-    } catch (err) {
-        console.error('Illustration fetch error:', err)
+
+        if (!response.ok) return ''
+
+        const data = await response.json()
+        return data.dataUrl || ''
+
+    } catch (error) {
+        console.error('Illustration fetch failed:', error)
         return ''
     }
 }

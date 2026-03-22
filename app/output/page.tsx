@@ -181,14 +181,26 @@ export default function OutputPage() {
             } else {
                 setFetchingIllustration(true)
                 setIllustrationWarning('')
-                illustrationBase64 = await fetchIllustrationAsBase64(
-                    docType,
-                    parsed.details
+
+                // 35s timeout fallback
+                const timeoutPromise = new Promise<string>((_, reject) =>
+                    setTimeout(() => reject(new Error('timeout')), 35000)
                 )
 
-                if (illustrationBase64 === '') {
-                    setIllustrationWarning('Illustration unavailable — downloading sheet without image')
+                try {
+                    illustrationBase64 = await Promise.race([
+                        fetchIllustrationAsBase64(docType, parsed.details),
+                        timeoutPromise
+                    ])
+                } catch (err) {
+                    console.error('Illustration handle error:', err)
+                    if (err instanceof Error && err.message === 'timeout') {
+                        setIllustrationWarning('Illustration timed out — downloading sheet without illustration')
+                    } else {
+                        setIllustrationWarning('Illustration unavailable — downloading sheet without image')
+                    }
                     setTimeout(() => setIllustrationWarning(''), 5000)
+                    illustrationBase64 = ''
                 }
 
                 setIllustrations(prev => ({
@@ -576,7 +588,7 @@ export default function OutputPage() {
                                         alignItems: 'center',
                                         gap: '4px'
                                     }}>
-                                        <span>Fetching your illustration from AI — takes about 15 seconds</span>
+                                        <span>Generating illustration — this may take up to 30 seconds...</span>
                                         <div className="flex gap-1">
                                             <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"></div>
                                             <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
