@@ -83,7 +83,7 @@ export default function LandingPage() {
       <main className="flex-1 overflow-hidden">
         {/* Hero Section */}
         <section
-          className="relative pt-24 pb-40 md:pt-40 md:pb-60 lg:px-[120px] px-[40px] max-w-[1600px] mx-auto min-h-[90vh] flex items-center bg-[#FAFAF8]"
+          className="relative pt-24 pb-40 md:pt-40 md:pb-60 lg:px-[120px] px-[40px] max-w-[1600px] mx-auto min-h-[700px] md:min-h-[90vh] flex items-center bg-[#FAFAF8]"
           style={{ position: 'relative', overflow: 'hidden' }}
         >
           {/* Animated Background Elements */}
@@ -160,16 +160,17 @@ export default function LandingPage() {
                 Architectural Productivity
               </div>
 
-              <h1 className="text-6xl md:text-8xl lg:text-[110px] font-serif font-bold tracking-tight mb-12 leading-[0.9] md:leading-[0.85] text-left text-[#1B2431]">
+              <h1 className="text-[36px] md:text-8xl lg:text-[110px] font-serif font-bold tracking-tight mb-12 leading-[1.1] md:leading-[0.85] text-left text-[#1B2431]">
                 Your preliminaries.<br />
-                <span className="text-[#D4A853] inline-flex items-center mt-4 md:mt-6 min-h-[1.1em] min-w-[12ch] md:min-w-[22ch]">
+                <span className="text-[#D4A853] inline-flex items-center mt-4 md:mt-6 min-h-[2.2em] md:min-h-[1.1em] min-w-[12ch] md:min-w-[22ch] max-w-full break-words">
                   {text}
                   <span
-                    className="inline-block w-[0.6em] h-[1em] bg-[#D4A853] ml-1"
+                    className="inline-block w-[0.6em] h-[1em] bg-[#D4A853] ml-1 flex-shrink-0"
                     style={{ animation: 'blink 1s step-end infinite' }}
                   />
                 </span>
               </h1>
+
 
               <p className="text-lg md:text-2xl text-[#4A5568] mb-12 max-w-2xl text-left leading-relaxed font-medium">
                 Upload your project brief and get your complete architectural preliminary writings instantly.
