@@ -228,14 +228,8 @@ export function generateSheet({
         contentStartY + 10
     )
 
-    // Illustration Logic
-    const illustrationDocs = [
-        'introduction',
-        'designBrief',
-        'briefDevelopment'
-    ]
-
-    if (illustrationBase64 && illustrationDocs.includes(docType)) {
+    // Illustration logic
+    if (illustrationBase64 && illustrationBase64.startsWith('data:')) {
         const imgX = contentLeft + contentWidth * 0.62
         const imgY = contentStartY + 16
         const imgW = contentWidth * 0.36
@@ -251,25 +245,15 @@ export function generateSheet({
                 imgH
             )
 
-            // Thin border around illustration
+            // Border around image
             pdf.setDrawColor(200, 195, 185)
             pdf.setLineWidth(0.3)
             pdf.rect(imgX, imgY, imgW, imgH)
-
-            // Caption below illustration
-            pdf.setFontSize(7)
-            pdf.setTextColor(150, 150, 150)
-            pdf.text(
-                docLabel,
-                imgX + imgW / 2,
-                imgY + imgH + 5,
-                { align: 'center' }
-            )
-        } catch {
-            // If image fails, continue without it
+        } catch (err) {
+            console.error('PDF addImage error:', err)
         }
 
-        // Reduce text content width to left column only
+        // Reduce text area to left 60% only
         contentWidth = contentWidth * 0.60
     }
 

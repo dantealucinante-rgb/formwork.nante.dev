@@ -30,6 +30,7 @@ export default function OutputPage() {
     const [showAuthModal, setShowAuthModal] = useState(false)
     const [illustrations, setIllustrations] = useState<Record<string, string>>({})
     const [fetchingIllustration, setFetchingIllustration] = useState(false)
+    const [illustrationWarning, setIllustrationWarning] = useState('')
     const { user } = useAuth()
 
     useEffect(() => {
@@ -179,10 +180,17 @@ export default function OutputPage() {
                 illustrationBase64 = illustrations[docType]
             } else {
                 setFetchingIllustration(true)
+                setIllustrationWarning('')
                 illustrationBase64 = await fetchIllustrationAsBase64(
                     docType,
                     parsed.details
                 )
+
+                if (illustrationBase64 === '') {
+                    setIllustrationWarning('Illustration unavailable — downloading sheet without image')
+                    setTimeout(() => setIllustrationWarning(''), 5000)
+                }
+
                 setIllustrations(prev => ({
                     ...prev,
                     [docType]: illustrationBase64
@@ -327,7 +335,6 @@ export default function OutputPage() {
                             for (let i = 0; i < parsed.selectedDocuments.length; i++) {
                                 const docType = parsed.selectedDocuments[i]
                                 await handlePrintSheet(docType)
-                                // Add a small delay between downloads if needed, but handlePrintSheet is async now
                             }
                         }}
                         disabled={fetchingIllustration}
@@ -343,7 +350,7 @@ export default function OutputPage() {
                             fontSize: '14px'
                         }}
                     >
-                        {fetchingIllustration ? 'Generating...' : 'Print All Sheets'}
+                        {fetchingIllustration ? 'Generating illustration...' : 'Print All Sheets'}
                     </button>
                     <button
                         onClick={() => handleDownload('pdf')}
@@ -560,13 +567,31 @@ export default function OutputPage() {
                                         : '🖨 Print Sheet'}
                                 </button>
                                 {fetchingIllustration && (
+                                    <div style={{
+                                        fontSize: '11px',
+                                        color: '#6B7280',
+                                        textAlign: 'center',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '4px'
+                                    }}>
+                                        <span>Fetching your illustration from AI — takes about 15 seconds</span>
+                                        <div className="flex gap-1">
+                                            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"></div>
+                                            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                            <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                        </div>
+                                    </div>
+                                )}
+                                {illustrationWarning && (
                                     <span style={{
                                         fontSize: '10px',
-                                        color: '#6B7280',
-                                        textAlign: 'center'
+                                        color: '#D97706',
+                                        textAlign: 'center',
+                                        fontWeight: 500
                                     }}>
-                                        Generating your illustration —<br />
-                                        this takes about 10 seconds
+                                        {illustrationWarning}
                                     </span>
                                 )}
                             </div>
