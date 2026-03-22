@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Navbar from '@/components/ui/Navbar'
 import { Upload, ArrowRight, CheckCircle2, Loader2, FileText, Type } from 'lucide-react'
+import { useAuth } from '@/lib/auth-context'
+
 
 const DOCUMENT_OPTIONS = [
     { id: 'introduction', label: 'Introduction' },
@@ -49,9 +51,25 @@ export default function GeneratePage() {
         specialRequirements: '',
         academicLevel: '200 Level',
         university: 'FUTA',
+        studentName: '',
+        matricNumber: '',
         extraContext: '',
         rawText: ''
     })
+
+    const { profile } = useAuth()
+
+    // Pre-fill student details from profile
+    useEffect(() => {
+        if (profile) {
+            setDetails(prev => ({
+                ...prev,
+                studentName: prev.studentName || profile.full_name || '',
+                matricNumber: prev.matricNumber || profile.matric_number || ''
+            }))
+        }
+    }, [profile])
+
 
     const [selectedDocuments, setSelectedDocuments] = useState(DOCUMENT_OPTIONS.map(d => d.id))
 
@@ -415,6 +433,30 @@ export default function GeneratePage() {
                                         disabled={isInputDisabled}
                                         className="w-full bg-white border border-[#E8E0D0] rounded-[6px] px-[16px] py-[12px] focus:outline-none focus:border-[#D4A853] transition-colors resize-none h-[100px]"
                                         placeholder="Anything your brief didn't cover? Add it here — site orientation, preferred case study references, lecturer preferences etc."
+                                    />
+                                </div>
+
+                                {/* Student Details */}
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">Your Full Name</label>
+                                    <input
+                                        type="text"
+                                        value={details.studentName}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, studentName: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[8px] px-[14px] py-[11px] focus:outline-none focus:border-[#D4A853] transition-colors text-[14px] font-sans"
+                                        placeholder="e.g. Ekpe Jacob Praise"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="block text-[11px] font-sans font-bold uppercase tracking-[0.1em] text-[#6B7280]">Matric Number</label>
+                                    <input
+                                        type="text"
+                                        value={details.matricNumber}
+                                        onChange={(e) => setDetails(prev => ({ ...prev, matricNumber: e.target.value }))}
+                                        disabled={isInputDisabled}
+                                        className="w-full bg-white border border-[#E8E0D0] rounded-[8px] px-[14px] py-[11px] focus:outline-none focus:border-[#D4A853] transition-colors text-[14px] font-sans"
+                                        placeholder="e.g. ARC/22/1234"
                                     />
                                 </div>
                             </div>

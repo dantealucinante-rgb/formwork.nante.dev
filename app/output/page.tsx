@@ -211,6 +211,8 @@ export default function OutputPage() {
             }
         }
 
+        console.log('illustrationBase64 length before generateSheet:', illustrationBase64.length)
+
         const pdf = generateSheet({
             docType,
             docLabel: DOC_LABELS[docType],

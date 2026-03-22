@@ -55,7 +55,10 @@ Location: {location}
 Users: {users}
 Capacity: {capacity}
 Special requirements: {specialRequirements}
+Student name: {studentName}
+Matric number: {matricNumber}
 Extra context: {extraContext}
+
 
 STRUCTURE — follow this exactly:
 
@@ -74,6 +77,7 @@ it do? Who uses it? Two short sentences maximum.
 RULES:
 - No history. No architect quotes. No long paragraphs.
 - Two definitions only — subject first, building second.
+- If student name and matric number are provided, do not include them in the written text — they appear in the title block only.
 - Total length: 60-80 words maximum.
 - Plain declarative sentences only.`,
 
@@ -404,9 +408,12 @@ export function buildPrompt(
     capacity: string
     specialRequirements: string
     university: string
+    studentName: string
+    matricNumber: string
     extraContext: string
     rawText: string
   }
+
 ): string {
   let prompt = PROMPTS[docType] || ''
 
@@ -418,7 +425,10 @@ export function buildPrompt(
     .replace(/{capacity}/g, details.capacity || 'the required number of users')
     .replace(/{specialRequirements}/g, details.specialRequirements || 'the brief requirements')
     .replace(/{university}/g, details.university || 'the university')
+    .replace(/{studentName}/g, details.studentName || '')
+    .replace(/{matricNumber}/g, details.matricNumber || '')
     .replace(/{extraContext}/g, details.extraContext || '')
+
 
   return prompt
 }

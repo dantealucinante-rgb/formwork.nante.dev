@@ -42,6 +42,7 @@ export async function fetchIllustrationAsBase64(
     docType: string,
     details: Record<string, any>
 ): Promise<string> {
+    console.log('fetchIllustrationAsBase64 called:', { docType })
     try {
         const response = await fetch('/api/illustration', {
             method: 'POST',
@@ -52,9 +53,12 @@ export async function fetchIllustrationAsBase64(
             })
         })
 
+        console.log('API response status:', response.status)
+
         if (!response.ok) return ''
 
         const data = await response.json()
+        console.log('dataUrl length:', data.dataUrl?.length)
         return data.dataUrl || ''
 
     } catch (error) {

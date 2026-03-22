@@ -17,6 +17,8 @@ interface ProjectDetails {
     specialRequirements: string
     academicLevel: string
     university: string
+    studentName: string
+    matricNumber: string
     extraContext: string
     rawText: string
 }

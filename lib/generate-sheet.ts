@@ -165,15 +165,19 @@ export function generateSheet({
     pdf.setFontSize(11)
     pdf.text(docLabel, col2 + 2, tbY + 12)
 
-    // Student name
+    // Student name and matric number
     pdf.setFontSize(9)
-    const studentName = details.studentName ||
-        details.fullName || 'ARCHITECTURE STUDENT'
+    const studentName = details.studentName || 'ARCHITECTURE STUDENT'
     pdf.text(
         studentName.toUpperCase(),
         col3 + 2,
         tbY + 10
     )
+
+    if (details.matricNumber) {
+        pdf.setFontSize(8)
+        pdf.text(details.matricNumber, col3 + 2, tbY + 14)
+    }
 
     // Date and university
     pdf.setFontSize(8)
@@ -185,11 +189,11 @@ export function generateSheet({
         year: 'numeric'
     }
     )
-    pdf.text(today, col3 + 2, tbY + 17)
+    pdf.text(today, col3 + 2, tbY + 19)
     pdf.text(
         details.university || 'FUTA',
         col3 + 2,
-        tbY + 23
+        tbY + 24
     )
 
     // Sheet number
@@ -230,6 +234,7 @@ export function generateSheet({
 
     // Illustration logic
     if (illustrationBase64 && illustrationBase64.startsWith('data:')) {
+        console.log('Attempting to add image, base64 length:', illustrationBase64?.length)
         const imgX = contentLeft + contentWidth * 0.62
         const imgY = contentStartY + 16
         const imgW = contentWidth * 0.36
