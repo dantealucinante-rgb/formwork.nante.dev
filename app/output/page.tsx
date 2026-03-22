@@ -569,7 +569,7 @@ export default function OutputPage() {
                                         alignItems: 'center',
                                         gap: '4px'
                                     }}>
-                                        <span>Generating illustration — this may take up to 30 seconds...</span>
+                                        <span>Generating illustration — first generation may take up to 60 seconds...</span>
                                         <div className="flex gap-1">
                                             <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce"></div>
                                             <div className="w-1.5 h-1.5 bg-amber-500 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
