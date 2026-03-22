@@ -13,6 +13,7 @@ import {
     generateSiteAnalysisSheet,
     downloadSiteAnalysisSVG
 } from '@/lib/sheets/site-analysis-sheet'
+import { fetchIllustrationAsBase64 } from '@/lib/sheets/illustration'
 import { useAuth } from '@/lib/auth-context'
 
 export default function OutputPage() {
@@ -27,6 +28,8 @@ export default function OutputPage() {
     const [isMobile, setIsMobile] = useState(false)
     const [fontIndex, setFontIndex] = useState(0)
     const [showAuthModal, setShowAuthModal] = useState(false)
+    const [illustrations, setIllustrations] = useState<Record<string, string>>({})
+    const [fetchingIllustration, setFetchingIllustration] = useState(false)
     const { user } = useAuth()
 
     useEffect(() => {
@@ -153,32 +156,52 @@ export default function OutputPage() {
         }
     }
 
-    const handlePrintAll = () => {
+    const handlePrintSheet = async (docType: string) => {
         if (!user) {
             setShowAuthModal(true)
             return
         }
-        const stored = sessionStorage.getItem(
-            'formwork_output'
-        )
+        const stored = sessionStorage.getItem('formwork_output')
         if (!stored) return
         const parsed = JSON.parse(stored)
 
-        parsed.selectedDocuments.forEach(
-            (docType: string, index: number) => {
-                setTimeout(() => {
-                    const pdf = generateSheet({
-                        docType,
-                        docLabel: DOC_LABELS[docType],
-                        content: parsed.documents[docType] || '',
-                        details: parsed.details,
-                        sheetNumber: SHEET_NUMBERS[docType],
-                        fontIndex: fontIndex
-                    })
-                    downloadSheet(pdf, DOC_LABELS[docType])
-                }, index * 800)
+        const illustrationDocs = [
+            'introduction',
+            'designBrief',
+            'briefDevelopment'
+        ]
+
+        let illustrationBase64 = ''
+
+        if (illustrationDocs.includes(docType)) {
+            // Check if already fetched
+            if (illustrations[docType]) {
+                illustrationBase64 = illustrations[docType]
+            } else {
+                setFetchingIllustration(true)
+                illustrationBase64 = await fetchIllustrationAsBase64(
+                    docType,
+                    parsed.details
+                )
+                setIllustrations(prev => ({
+                    ...prev,
+                    [docType]: illustrationBase64
+                }))
+                setFetchingIllustration(false)
             }
-        )
+        }
+
+        const pdf = generateSheet({
+            docType,
+            docLabel: DOC_LABELS[docType],
+            content: documents[docType] || '',
+            details: parsed.details,
+            sheetNumber: SHEET_NUMBERS[docType],
+            fontIndex,
+            illustrationBase64
+        })
+
+        downloadSheet(pdf, DOC_LABELS[docType])
     }
 
     const currentContent = editMode
@@ -292,20 +315,35 @@ export default function OutputPage() {
                     alignItems: 'center'
                 }}>
                     <button
-                        onClick={handlePrintAll}
+                        onClick={async () => {
+                            if (!user) {
+                                setShowAuthModal(true)
+                                return
+                            }
+                            const stored = sessionStorage.getItem('formwork_output')
+                            if (!stored) return
+                            const parsed = JSON.parse(stored)
+
+                            for (let i = 0; i < parsed.selectedDocuments.length; i++) {
+                                const docType = parsed.selectedDocuments[i]
+                                await handlePrintSheet(docType)
+                                // Add a small delay between downloads if needed, but handlePrintSheet is async now
+                            }
+                        }}
+                        disabled={fetchingIllustration}
                         style={{
-                            background: '#D4A853',
+                            background: fetchingIllustration ? '#9CA3AF' : '#D4A853',
                             color: '#1B2431',
                             fontWeight: 600,
                             padding: '10px 20px',
                             borderRadius: '6px',
                             border: 'none',
-                            cursor: 'pointer',
+                            cursor: fetchingIllustration ? 'not-allowed' : 'pointer',
                             fontFamily: 'DM Sans, sans-serif',
                             fontSize: '14px'
                         }}
                     >
-                        Print All Sheets
+                        {fetchingIllustration ? 'Generating...' : 'Print All Sheets'}
                     </button>
                     <button
                         onClick={() => handleDownload('pdf')}
@@ -495,43 +533,43 @@ export default function OutputPage() {
                                 ↻ Regenerate
                             </button>
 
-                            <button
-                                onClick={() => {
-                                    if (!user) {
-                                        setShowAuthModal(true)
-                                        return
-                                    }
-                                    const stored = sessionStorage.getItem(
-                                        'formwork_output'
-                                    )
-                                    if (!stored) return
-                                    const parsed = JSON.parse(stored)
-                                    const pdf = generateSheet({
-                                        docType: activeTab,
-                                        docLabel: DOC_LABELS[activeTab],
-                                        content: documents[activeTab] || '',
-                                        details: parsed.details,
-                                        sheetNumber: SHEET_NUMBERS[activeTab],
-                                        fontIndex: fontIndex
-                                    })
-                                    downloadSheet(pdf, DOC_LABELS[activeTab])
-                                }}
-                                style={{
-                                    padding: '8px 16px',
-                                    background: '#1B2431',
-                                    color: '#FAFAF8',
-                                    border: 'none',
-                                    borderRadius: '6px',
-                                    fontSize: '13px',
-                                    cursor: 'pointer',
-                                    fontFamily: 'DM Sans, sans-serif',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    gap: '6px'
-                                }}
-                            >
-                                🖨 Print Sheet
-                            </button>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                                <button
+                                    onClick={() => handlePrintSheet(activeTab)}
+                                    disabled={fetchingIllustration}
+                                    style={{
+                                        padding: '8px 16px',
+                                        background: fetchingIllustration
+                                            ? '#9CA3AF'
+                                            : '#1B2431',
+                                        color: '#FAFAF8',
+                                        border: 'none',
+                                        borderRadius: '6px',
+                                        fontSize: '13px',
+                                        cursor: fetchingIllustration
+                                            ? 'not-allowed'
+                                            : 'pointer',
+                                        fontFamily: 'DM Sans, sans-serif',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px'
+                                    }}
+                                >
+                                    {fetchingIllustration
+                                        ? 'Generating illustration...'
+                                        : '🖨 Print Sheet'}
+                                </button>
+                                {fetchingIllustration && (
+                                    <span style={{
+                                        fontSize: '10px',
+                                        color: '#6B7280',
+                                        textAlign: 'center'
+                                    }}>
+                                        Generating your illustration —<br />
+                                        this takes about 10 seconds
+                                    </span>
+                                )}
+                            </div>
 
                             {activeTab === 'siteAnalysis' && (
                                 <button

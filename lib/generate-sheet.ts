@@ -70,6 +70,7 @@ export function generateSheet({
     details,
     sheetNumber,
     fontIndex,
+    illustrationBase64,
     totalSheets = 9
 }: {
     docType: string
@@ -78,6 +79,7 @@ export function generateSheet({
     details: Record<string, any>
     sheetNumber: string
     fontIndex: number
+    illustrationBase64?: string
     totalSheets?: number
 }): jsPDF {
 
@@ -209,7 +211,7 @@ export function generateSheet({
     const contentEndY = tbY - 4
     const contentLeft = OUTER_MARGIN + 6
     const contentRight = W - OUTER_MARGIN - 6
-    const contentWidth = contentRight - contentLeft
+    let contentWidth = contentRight - contentLeft
 
     // Document title inside sheet
     pdf.setFontSize(14)
@@ -226,6 +228,51 @@ export function generateSheet({
         contentStartY + 10
     )
 
+    // Illustration Logic
+    const illustrationDocs = [
+        'introduction',
+        'designBrief',
+        'briefDevelopment'
+    ]
+
+    if (illustrationBase64 && illustrationDocs.includes(docType)) {
+        const imgX = contentLeft + contentWidth * 0.62
+        const imgY = contentStartY + 16
+        const imgW = contentWidth * 0.36
+        const imgH = imgW * 0.76
+
+        try {
+            pdf.addImage(
+                illustrationBase64,
+                'JPEG',
+                imgX,
+                imgY,
+                imgW,
+                imgH
+            )
+
+            // Thin border around illustration
+            pdf.setDrawColor(200, 195, 185)
+            pdf.setLineWidth(0.3)
+            pdf.rect(imgX, imgY, imgW, imgH)
+
+            // Caption below illustration
+            pdf.setFontSize(7)
+            pdf.setTextColor(150, 150, 150)
+            pdf.text(
+                docLabel,
+                imgX + imgW / 2,
+                imgY + imgH + 5,
+                { align: 'center' }
+            )
+        } catch {
+            // If image fails, continue without it
+        }
+
+        // Reduce text content width to left column only
+        contentWidth = contentWidth * 0.60
+    }
+
     // Subtle grid lines
     pdf.setDrawColor(220, 215, 205)
     pdf.setLineWidth(0.1)
@@ -234,7 +281,7 @@ export function generateSheet({
         y < contentEndY - 5;
         y += profile.lineHeight
     ) {
-        pdf.line(contentLeft, y + 2, contentRight, y + 2)
+        pdf.line(contentLeft, y + 2, contentLeft + contentWidth, y + 2)
     }
 
     // Content text using font profile
@@ -278,6 +325,7 @@ export function generateSheet({
             textY += profile.lineHeight * 0.5
         }
     }
+
 
     // Reset char space
     pdf.setCharSpace(0)
