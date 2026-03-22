@@ -160,16 +160,17 @@ export default function LandingPage() {
                 Architectural Productivity
               </div>
 
-              <h1 className="text-[36px] md:text-8xl lg:text-[110px] font-serif font-bold tracking-tight mb-12 leading-[1.1] md:leading-[0.85] text-left text-[#1B2431]">
+              <h1 className="text-[54px] md:text-8xl lg:text-[110px] font-serif font-bold tracking-tight mb-12 leading-[1.05] md:leading-[0.85] text-left text-[#1B2431]">
                 Your preliminaries.<br />
-                <span className="text-[#D4A853] inline-flex items-center mt-4 md:mt-6 min-h-[2.2em] md:min-h-[1.1em] min-w-[12ch] md:min-w-[22ch] max-w-full break-words">
+                <span className="text-[#D4A853] inline-block mt-4 md:mt-6 min-h-[2.2em] md:min-h-[1.1em] w-full max-w-full break-words relative">
                   {text}
                   <span
-                    className="inline-block w-[0.6em] h-[1em] bg-[#D4A853] ml-1 flex-shrink-0"
+                    className="inline-block w-[0.4em] h-[0.9em] bg-[#D4A853] ml-1 translate-y-[0.1em]"
                     style={{ animation: 'blink 1s step-end infinite' }}
                   />
                 </span>
               </h1>
+
 
 
               <p className="text-lg md:text-2xl text-[#4A5568] mb-12 max-w-2xl text-left leading-relaxed font-medium">
